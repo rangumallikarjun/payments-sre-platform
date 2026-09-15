@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: fraud-monitor
-          image: ghcr.io/YOUR_GITHUB_USERNAME/fraud-monitor:initial
+          image: ghcr.io/rangumallikarjun/fraud-monitor:initial
           ports:
             - containerPort: 8000
           env:

@@ -8,8 +8,7 @@ metadata:
 spec:
   project: payments-sre-platform
   source:
-    # Replace with your fork's URL once you push this repo to GitHub.
-    repoURL: https://github.com/YOUR_GITHUB_USERNAME/payments-sre-platform.git
+    repoURL: https://github.com/rangumallikarjun/payments-sre-platform.git
     targetRevision: main
     path: k8s/base
     directory:

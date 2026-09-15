@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: ghcr.io/YOUR_GITHUB_USERNAME/payment-service:initial
+          image: ghcr.io/rangumallikarjun/payment-service:initial
           ports:
             - containerPort: 8000
           env:

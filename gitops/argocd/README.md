@@ -25,10 +25,9 @@ Open https://localhost:8080, log in as `admin` with the password above.
 
 ## Register this project + application
 
-1. Fork/push this repo to your own GitHub account.
-2. Edit `app-payments-platform.yaml` and replace `YOUR_GITHUB_USERNAME` with
-   your GitHub username (or point `repoURL` at your fork).
-3. Apply both manifests:
+`app-payments-platform.yaml` already points `repoURL` at this repository. If
+you fork it, update that field to your fork's URL first. Then apply both
+manifests:
 
 ```bash
 kubectl apply -f project.yaml

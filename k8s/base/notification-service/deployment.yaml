@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: ghcr.io/YOUR_GITHUB_USERNAME/notification-service:initial
+          image: ghcr.io/rangumallikarjun/notification-service:initial
           ports:
             - containerPort: 8000
           env:
