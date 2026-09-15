@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: payments-platform
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: payments-sre-platform
+  source:
+    # Replace with your fork's URL once you push this repo to GitHub.
+    repoURL: https://github.com/YOUR_GITHUB_USERNAME/payments-sre-platform.git
+    targetRevision: main
+    path: k8s/base
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: payments
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

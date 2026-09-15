@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fraud-monitor
+  namespace: payments
+  labels:
+    app: fraud-monitor
+spec:
+  selector:
+    app: fraud-monitor
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000

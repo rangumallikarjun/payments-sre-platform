@@ -1,0 +1,53 @@
+groups:
+  - name: payments-platform-slo
+    rules:
+      - alert: PaymentServiceHighErrorRate
+        expr: |
+          sum(rate(payment_requests_total{status="error"}[5m]))
+          /
+          sum(rate(payment_requests_total[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: page
+          service: payment-service
+        annotations:
+          summary: "payment-service error rate above 5% for 5m"
+          description: "Error rate has exceeded the 99.5% availability SLO's error budget burn threshold. See sli-slo/slo-definitions.yaml."
+
+      - alert: PaymentServiceHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(payment_request_duration_seconds_bucket[5m])) by (le))
+          > 0.3
+        for: 5m
+        labels:
+          severity: warn
+          service: payment-service
+        annotations:
+          summary: "payment-service p95 latency above 300ms for 5m"
+
+      - alert: NotificationServiceHighFailureRate
+        expr: |
+          sum(rate(notification_requests_total{status="failed"}[5m]))
+          /
+          sum(rate(notification_requests_total[5m]))
+          > 0.1
+        for: 5m
+        labels:
+          severity: warn
+          service: notification-service
+        annotations:
+          summary: "notification-service delivery failure rate above 10% for 5m"
+
+      - alert: FraudMonitorHighErrorRate
+        expr: |
+          sum(rate(fraud_score_requests_total{outcome="error"}[5m]))
+          /
+          sum(rate(fraud_score_requests_total[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: page
+          service: fraud-monitor
+        annotations:
+          summary: "fraud-monitor scoring error rate above 5% for 5m"

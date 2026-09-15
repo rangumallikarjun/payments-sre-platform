@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch: {}
+
+exporters:
+  logging:
+    verbosity: normal
+  # Swap in a real tracing backend (Jaeger, Tempo, etc.) here when available.
+  # For this project, traces are logged so the pipeline is demonstrable
+  # without standing up another paid/hosted component.
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]

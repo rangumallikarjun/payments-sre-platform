@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: payments-sre-platform
+  namespace: argocd
+spec:
+  description: Synthetic payments platform used for SRE/GitOps demonstration
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: payments
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

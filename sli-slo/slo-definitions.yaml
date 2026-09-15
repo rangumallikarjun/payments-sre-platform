@@ -1,0 +1,46 @@
+# SLI/SLO definitions for the synthetic payments platform.
+#
+# These mirror how reliability targets are typically expressed in practice:
+# an SLI (the measurement), an SLO (the target), and a window over which the
+# error budget is tracked.
+
+services:
+  - name: payment-service
+    slis:
+      - name: availability
+        description: Fraction of requests that do not return a 5xx
+        prometheus_query: |
+          sum(rate(payment_requests_total{status!="error"}[{window}]))
+          /
+          sum(rate(payment_requests_total[{window}]))
+        slo_target: 0.995
+        window: 30d
+
+      - name: latency_p95
+        description: 95th percentile request latency
+        prometheus_query: |
+          histogram_quantile(0.95, sum(rate(payment_request_duration_seconds_bucket[{window}])) by (le))
+        slo_target_seconds: 0.3
+        window: 30d
+
+  - name: fraud-monitor
+    slis:
+      - name: availability
+        description: Fraction of scoring requests that do not error
+        prometheus_query: |
+          sum(rate(fraud_score_requests_total{outcome!="error"}[{window}]))
+          /
+          sum(rate(fraud_score_requests_total[{window}]))
+        slo_target: 0.99
+        window: 30d
+
+  - name: notification-service
+    slis:
+      - name: delivery_success
+        description: Fraction of notifications successfully delivered
+        prometheus_query: |
+          sum(rate(notification_requests_total{status="delivered"}[{window}]))
+          /
+          sum(rate(notification_requests_total[{window}]))
+        slo_target: 0.97
+        window: 30d

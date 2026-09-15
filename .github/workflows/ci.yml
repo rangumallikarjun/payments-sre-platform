@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    name: Test (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [payment-service, fraud-monitor, notification-service]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: src/${{ matrix.service }}
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: src/${{ matrix.service }}
+        run: pytest -v
+
+  build-and-scan:
+    name: Build & scan (${{ matrix.service }})
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [payment-service, fraud-monitor, notification-service]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        working-directory: src/${{ matrix.service }}
+        run: docker build -t ${{ matrix.service }}:${{ github.sha }} .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ matrix.service }}:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+  publish:
+    name: Publish (${{ matrix.service }})
+    needs: build-and-scan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [payment-service, fraud-monitor, notification-service]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        working-directory: src/${{ matrix.service }}
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}
+          docker build -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+  policy-check:
+    name: Policy-as-code check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Conftest
+        run: |
+          curl -sL https://github.com/open-policy-agent/conftest/releases/download/v0.55.0/conftest_0.55.0_Linux_x86_64.tar.gz -o conftest.tar.gz
+          tar xzf conftest.tar.gz
+          sudo mv conftest /usr/local/bin
+
+      - name: Run policy checks against Kubernetes manifests
+        run: conftest test k8s/base --policy policy/conftest --all-namespaces
